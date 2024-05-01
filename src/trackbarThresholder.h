@@ -4,6 +4,11 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
+
+// Option for user to calibrate threshold value and type.
+extern bool calibrate_threshold;
+
+
 // Class to implement thresholding using a trackbar
 class TrackbarThresholder {
 public:
@@ -27,5 +32,9 @@ private:
 	const int maxThresholdValue = 255;
 	const int maxThresholdType = 4;
 
+	// Perform actual thresholding
+	void doThreshold();
+
+	// Callback of the trackbar to vary thresholding.
 	static void trackbarCallback(int, void*);
 };
