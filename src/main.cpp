@@ -5,6 +5,7 @@
 
 #include "indicator.h"
 #include "trackbarThresholder.h"
+#include "histogram.h"
 
 // cv::CommandLineParser syntax: name, default value, description
 // @ is a positional arg and <none> enforces a user-provided value
@@ -46,6 +47,7 @@ int main(int argc, char** argv) {
 	}
 
 	cv::imshow(filename, image);
+	showHistogram(cropped);
 	cv::waitKey(0);
 
 	return 0;
