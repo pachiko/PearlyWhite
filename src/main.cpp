@@ -3,32 +3,42 @@
 #include <opencv2/highgui.hpp>
 #include <iostream>
 
-#include "inputParser.h"
 #include "indicator.h"
 #include "trackbarThresholder.h"
 
+// cv::CommandLineParser syntax: name, default value, description
+// @ is a positional arg and <none> enforces a user-provided value
+const std::string keys =
+"{help h usage ? | | prints this message }"
+"{@image| <none> | path to image file }"
+"{calibrate | | use trackbar to calibrate image thresholding }"
+;
+
 
 int main(int argc, char** argv) {
-	InputParser input(argc, argv);
+	cv::CommandLineParser parser(argc, argv, keys);
+	parser.about("PearlyWhite v1.0.0\nThis program displays an auto-rotated dental image along with its histogram\n");
 
-	if (argc < 2 || argc > 3) {
-		std::cout << " Usage: " << "PearlyWhite.exe "
-			<< "[--calibrate]"
-			<< "ImageToLoadAndDisplay\n";
+	if (parser.has("help"))	{
+		parser.printMessage();
+		return 0;
+	}
+
+	std::string filename = parser.get<std::string>("@image");
+	if (!parser.check()) {
+		parser.printErrors();
+		parser.printMessage();
 		return -1;
 	}
 
-	std::string filename = argv[1];
 	cv::Mat image = cv::imread(filename, cv::IMREAD_GRAYSCALE);
 	if (image.empty()) {
 		std::cout << "Could not open or find the image: " << filename << "\n";
 		return -1;
 	}
 
-	if (input.cmdOptionExists("--calibrate")) {
-		calibrate_threshold = true;
-	}
-
+	calibrate_threshold = parser.has("calibrate");
+	
 	cv::Mat cropped = cropGrid(image);
 	int rot = getImageRotation(cropped);
 	if (rot >= 0) {

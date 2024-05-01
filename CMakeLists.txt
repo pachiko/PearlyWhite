@@ -23,7 +23,6 @@ add_executable (PearlyWhite
 	# header files
 	"src/trackbarThresholder.h"
 	"src/indicator.h"
-	"src/inputParser.h"
 )
 
 TARGET_LINK_LIBRARIES(PearlyWhite ${OpenCV_LIBS})
