@@ -1,0 +1,239 @@
+{
+  "AcquisitionDate": "20150310",
+  "AcquisitionTime": "115209",
+  "AcquisitionTypeName": "IntraBitewingAdult",
+  "AcquisitionTypeDescription": "Intraoral Bissflügel Erwachsener",
+  "WorkstationUid": "4279b83d-d6e1-410c-b0ec-081ea80df5bb",
+  "AdditionalScanInfo": {},
+  "Manufacturer": "DUERR DENTAL",
+  "InstitutionUID": "d0f42001-528f-486b-bfdf-a5ae00ef68a1",
+  "InstitutionName": "dd",
+  "InstitutionAddress": "ddd",
+  "DeviceSerialNumber": "Import",
+  "SoftwareVersions": [
+    "Duerr Dental VistaSoft 0.1.0"
+  ],
+  "VistaSoftUid": "952a45b0-e188-4332-a27b-a54700fe6a21",
+  "ImageClass": "Intra",
+  "ImageSource": "FileImport",
+  "ContentDate": "20070814",
+  "ContentTime": "115209",
+  "PixelSpacing": [
+    0.025249,
+    0.025249
+  ],
+  "PixelSpacingCalibrationType": "GEOMETRY",
+  "ExaminedParts": [
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "33",
+    "34",
+    "35",
+    "36",
+    "37"
+  ],
+  "OriginalCodec": "DICOM",
+  "OriginalColorDepth": "Gray16",
+  "Rows": 1246,
+  "Columns": 1603,
+  "SamplesPerPixel": 1,
+  "BitsStored": 16,
+  "BitsAllocated": 16,
+  "HighBit": 15,
+  "PhotometricInterpretation": "MONOCHROME2",
+  "PlanarConfiguration": 0,
+  "PixelRepresentation": 0,
+  "ImageCompression": "Uncompressed",
+  "SeriesNumber": 1,
+  "SeriesDate": "20150216",
+  "SeriesTime": "171604",
+  "SeriesInstanceUID": "1.2.276.0.82.1.1.3.3090824007.9336.1424103364.225",
+  "Modality": "IO",
+  "PerformingPhysicianName": [
+    {
+      "Family": "Dr. Demo",
+      "Given": null,
+      "Prefix": null,
+      "Middle": null,
+      "Suffix": null,
+      "FamilyIdeographic": null,
+      "GivenIdeographic": null,
+      "MiddleIdeographic": null,
+      "PrefixIdeographic": null,
+      "SuffixIdeographic": null,
+      "FamilyPhonetic": null,
+      "GivenPhonetic": null,
+      "MiddlePhonetic": null,
+      "PrefixPhonetic": null,
+      "SuffixPhonetic": null
+    }
+  ],
+  "OperatorsName": [
+    "Dr. Demo"
+  ],
+  "RequestingStationName": "Demo Station",
+  "SOPClassUID": "1.2.840.10008.5.1.4.1.1.1",
+  "SOPInstanceUID": "1.2.276.0.82.1.1.4.3090824007.9336.1424103364.226",
+  "InstanceNumber": 1,
+  "XrayStationUID": "00000000-0000-0000-0000-000000000000",
+  "PixelIntensityRelationship": "LIN",
+  "PixelIntensityRelationshipSign": "-1",
+  "ImagerPixelSpacing": [
+    0.025249,
+    0.025249
+  ],
+  "XrayParametersConfirmed": true,
+  "PresentationStates": [
+    {
+      "PresentationStateType": "Initial",
+      "Warnings": "None",
+      "PresentationStateDateTime": "2023-03-29T15:11:39.5399981+02:00",
+      "PresentationStateUID": "0457637d-1af4-488f-ba69-afd400d96f87",
+      "SOPInstanceUID": "1.2.276.0.82.1.1.4.976157049.3680.1680095499.833",
+      "SeriesInstanceUID": "1.2.276.0.82.1.1.3.976157049.3680.1680095499.832",
+      "Brightness": 0.5,
+      "Contrast": 0.5,
+      "Gamma": 1.0,
+      "Invert": false,
+      "LimitWhite": 0.0,
+      "LimitBlack": 0.0,
+      "WindowingMode": "Static",
+      "WindowCenterRelative": 0.5,
+      "WindowWidthRelative": 1.0,
+      "WindowFunction": "Linear",
+      "WindowingAlgorithm": "VISTACONNECT_V1",
+      "CoordinateSystem": "World",
+      "FilterChain": [
+        {
+          "FilterName": "BlackMaskFilter",
+          "FilterParameters": [
+            {
+              "FilterParameterName": "backgroundValue",
+              "FilterParameterValue": "2570"
+            },
+            {
+              "FilterParameterName": "backgroundEnabled",
+              "FilterParameterValue": "False"
+            }
+          ]
+        }
+      ],
+      "AfterLoadFilters": [],
+      "Annotations": [],
+      "MirrorMode": "None",
+      "Rotation": 0
+    },
+    {
+      "PresentationStateType": "Last",
+      "Warnings": "None",
+      "PresentationStateDateTime": "2023-03-29T15:11:39.5399981+02:00",
+      "PresentationStateUID": "0b431f12-2798-4118-97c6-afd400d96f87",
+      "Brightness": 0.5,
+      "Contrast": 0.5,
+      "Gamma": 1.0,
+      "Invert": false,
+      "LimitWhite": 0.0045420454625106016,
+      "LimitBlack": 0.079866302048025917,
+      "WindowingMode": "Static",
+      "WindowCenterRelative": 0.78097345132743357,
+      "WindowWidthRelative": 0.26106194690265472,
+      "WindowFunction": "Linear",
+      "WindowingAlgorithm": "VISTACONNECT_V1",
+      "CoordinateSystem": "World",
+      "FilterChain": [
+        {
+          "FilterName": "BlackMaskFilter",
+          "FilterParameters": [
+            {
+              "FilterParameterName": "backgroundValue",
+              "FilterParameterValue": "2570"
+            },
+            {
+              "FilterParameterName": "backgroundEnabled",
+              "FilterParameterValue": "True"
+            }
+          ]
+        },
+        {
+          "FilterName": "FFTFilter",
+          "FilterParameters": [
+            {
+              "FilterParameterName": "al1",
+              "FilterParameterValue": "1.00"
+            },
+            {
+              "FilterParameterName": "al0",
+              "FilterParameterValue": "0.0"
+            },
+            {
+              "FilterParameterName": "ftp",
+              "FilterParameterValue": "10.0"
+            },
+            {
+              "FilterParameterName": "ah0",
+              "FilterParameterValue": "0.5"
+            },
+            {
+              "FilterParameterName": "ah1",
+              "FilterParameterValue": "1.00"
+            },
+            {
+              "FilterParameterName": "fhp",
+              "FilterParameterValue": "0.70"
+            },
+            {
+              "FilterParameterName": "preserveZeroFreq",
+              "FilterParameterValue": "1"
+            }
+          ]
+        }
+      ],
+      "AfterLoadFilters": [],
+      "Annotations": [],
+      "MirrorMode": "None",
+      "Rotation": 0
+    },
+    {
+      "PresentationStateType": "Original",
+      "Warnings": "None",
+      "PresentationStateDateTime": "2023-03-29T15:11:39.5459995+02:00",
+      "PresentationStateUID": "ad974fe2-cff3-44f3-b24e-afd400d96f89",
+      "SOPInstanceUID": "1.2.276.0.82.1.1.4.3090824007.9336.1424103364.226",
+      "SeriesInstanceUID": "1.2.276.0.82.1.1.3.3090824007.9336.1424103364.225",
+      "Brightness": 0.5,
+      "Contrast": 0.5,
+      "Gamma": 1.0,
+      "Invert": false,
+      "LimitWhite": 0.0,
+      "LimitBlack": 0.0,
+      "WindowingMode": "Static",
+      "WindowCenterRelative": 0.5,
+      "WindowWidthRelative": 1.0,
+      "WindowFunction": "Linear",
+      "WindowingAlgorithm": "VISTACONNECT_V1",
+      "CoordinateSystem": "World",
+      "FilterChain": [
+        {
+          "FilterName": "BlackMaskFilter",
+          "FilterParameters": [
+            {
+              "FilterParameterName": "backgroundValue",
+              "FilterParameterValue": "2570"
+            },
+            {
+              "FilterParameterName": "backgroundEnabled",
+              "FilterParameterValue": "False"
+            }
+          ]
+        }
+      ],
+      "AfterLoadFilters": [],
+      "Annotations": [],
+      "MirrorMode": "None",
+      "Rotation": 0
+    }
+  ]
+}
