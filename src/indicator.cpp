@@ -5,46 +5,6 @@
 #include "trackbarThresholder.h"
 
 
-// Finds the largest contour in the vector. Approximates by using area of bounding rect.
-int findLargestContour(const std::vector<std::vector<cv::Point>>& contours) {
-	double maxArea = -1;
-	int maxContourIdx = -1;
-
-	for (size_t i = 0; i < contours.size(); i++) {
-		cv::Rect r = cv::boundingRect(contours[i]);
-		double area = r.width * r.height;
-		if (area > maxArea) {
-			maxArea = area;
-			maxContourIdx = i;
-		}
-	}
-
-	return maxContourIdx;
-}
-
-
-// Cut away the grid in the image and return the cropped image.
-// The numbers on the grid creates many false positives when finding the indicator.
-cv::Mat cropGrid(const cv::Mat& image) {
-	TrackbarThresholder gridCropping(230, 1, "Grid Removal");
-	gridCropping.m_input = image;
-	gridCropping.threshold();
-
-	std::vector<std::vector<cv::Point>> contours;
-	cv::findContours(gridCropping.m_output, contours, cv::RetrievalModes::RETR_LIST, cv::ContourApproximationModes::CHAIN_APPROX_SIMPLE);
-
-	int maxContourIdx = findLargestContour(contours);
-	if (maxContourIdx < 0) {
-		std::cout << "Could not extract image without grid\n";
-		return image;
-	}
-
-	cv::Rect r = cv::boundingRect(contours[maxContourIdx]);
-
-	return image(cv::Range(r.y, r.y + r.height), cv::Range(r.x, r.x + r.width));
-}
-
-
 // Calculates the distance ratio of a value 'x' from the 'edge' or from 0, whichever is nearer.
 // Also returns a boolean to indicate 'x' is closer to 0 than the 'edge'.
 inline std::pair<double, bool> fromEdge(double x, double edge) {
