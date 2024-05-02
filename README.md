@@ -35,12 +35,21 @@ Next, specify the `build` directory which is usually just `<source directory>/bu
 
 Click on `Configure` and a window pops up. Use `Visual Studio` as the generator and `x64` as the platform. Click on `Finish`.
 
+![alt text](https://github.com/pachiko/PearlyWhite/blob/main/media/CMake-config.png?raw=true)
+
 Finally, click on `Generate` to create the build files. If successful, you should see something similar to the outputs below.
 
+![alt text](https://github.com/pachiko/PearlyWhite/blob/main/media/CMake-gen.png?raw=true)
+
 ## Compile
-Open Visual Studio, right-click on the `PearlyWhite` project in `Solution Explorer`. Press `Set as Startup Project`. This ensures that PearlyWhite will be the project being compiled and run.
+Open Visual Studio, right-click on the `PearlyWhite` project in `Solution Explorer`. Press `Set as Startup Project`.
+This ensures that PearlyWhite will be the project being compiled and run.
+
+![alt text](https://github.com/pachiko/PearlyWhite/blob/main/media/VS-startup-proj.png?raw=true)
 
 Alternatively, you can go to `Build` drop-down menu and press `Build PearlyWhite`. This builds the executable without running it.
+
+![alt text](https://github.com/pachiko/PearlyWhite/blob/main/media/VS-build.png?raw=true)
 
 ## Usage
 You can run the compiled executable from `PowerShell`:
@@ -57,3 +66,11 @@ Usage: PearlyWhite.exe [params] image
 ```
 If `calibrate` option is passed in as argument, the application allows you to set the thresholding value and the thresholding type.
 This can be useful if the dental image or indicator cannot be detected by the program using default thresholding values.
+
+![alt text](https://github.com/pachiko/PearlyWhite/blob/main/media/PearlyWhite-calibrate.png?raw=true)
+
+The final output and histogram should look like the following:
+
+![alt text](https://github.com/pachiko/PearlyWhite/blob/main/media/PearlyWhite-output.png?raw=true)
+
+![alt text](https://github.com/pachiko/PearlyWhite/blob/main/media/PearlyWhite-histo.png?raw=true)
