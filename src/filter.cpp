@@ -71,10 +71,11 @@ void fill_rounded_rectangle(cv::Mat& src, const cv::Rect& r, int cornerRadius) {
 	line(src, cv::Point(p1.x, p1.y + cornerRadius), cv::Point(p4.x, p4.y - cornerRadius), lineColor, thickness, lineType);
 
 	// draw arcs
-	ellipse(src, p1 + cv::Point(cornerRadius, cornerRadius), cv::Size(cornerRadius, cornerRadius), 180.0, 0, 90, lineColor, thickness, lineType);
-	ellipse(src, p2 + cv::Point(-cornerRadius, cornerRadius), cv::Size(cornerRadius, cornerRadius), 270.0, 0, 90, lineColor, thickness, lineType);
-	ellipse(src, p3 + cv::Point(-cornerRadius, -cornerRadius), cv::Size(cornerRadius, cornerRadius), 0.0, 0, 90, lineColor, thickness, lineType);
-	ellipse(src, p4 + cv::Point(cornerRadius, -cornerRadius), cv::Size(cornerRadius, cornerRadius), 90.0, 0, 90, lineColor, thickness, lineType);
+	cv::Size rad(cornerRadius, cornerRadius);
+	ellipse(src, p1 + cv::Point(cornerRadius, cornerRadius), rad, 180.0, 0, 90, lineColor, thickness, lineType);
+	ellipse(src, p2 + cv::Point(-cornerRadius, cornerRadius), rad, 270.0, 0, 90, lineColor, thickness, lineType);
+	ellipse(src, p3 + cv::Point(-cornerRadius, -cornerRadius), rad, 0.0, 0, 90, lineColor, thickness, lineType);
+	ellipse(src, p4 + cv::Point(cornerRadius, -cornerRadius), rad, 90.0, 0, 90, lineColor, thickness, lineType);
 
 	// choose arbitrary starting point for fill
 	cv::Point fillFrom = { (r.x + r.width) / 2, (r.y + r.height) / 2 };

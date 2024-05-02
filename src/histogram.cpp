@@ -11,9 +11,10 @@ cv::Mat getHistogram(const cv::Mat& image) {
 	float range[] = { 0, 256 };
 	const float* histRange[] = { range };
 
-	cv::Mat mask = cv::Mat::zeros(cv::Size(image.cols,image.rows), CV_8UC1);
+	cv::Mat mask = cv::Mat::zeros(cv::Size(image.cols, image.rows), CV_8UC1);
 	cv::Rect r{0, 0, image.cols, image.rows};
-	fill_rounded_rectangle(mask, r, 100);
+	int corner = 0.25 * std::min(image.cols, image.rows);
+	fill_rounded_rectangle(mask, r, corner);
 
 	cv::Mat hist;
 	cv::calcHist(&image, 
