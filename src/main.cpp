@@ -7,6 +7,7 @@
 #include "indicator.h"
 #include "trackbarThresholder.h"
 #include "histogram.h"
+#include "dicm.h"
 
 
 // cv::CommandLineParser syntax: name, default value, description
@@ -34,26 +35,28 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-	cv::Mat image = cv::imread(filename, cv::IMREAD_GRAYSCALE);
-	if (image.empty()) {
-		std::cout << "Could not open or find the image: " << filename << "\n";
-		return -1;
-	}
+	DICOMReader reader(filename);
 
-	calibrate_threshold = parser.has("calibrate");
-	
-	cv::Mat cropped = cropGrid(image);
-	int rot = getImageRotation(cropped);
-	if (rot >= 0) {
-		cv::rotate(image, image, rot);
-	}
+	//cv::Mat image = cv::imread(filename, cv::IMREAD_GRAYSCALE);
+	//if (image.empty()) {
+	//	std::cout << "Could not open or find the image: " << filename << "\n";
+	//	return -1;
+	//}
 
-	cv::imshow(filename, image);
-	cv::Mat histImage = getHistogram(cropped);
-	cv::imshow("Histogram", histImage);
-	cv::waitKey(0);
-	cv::destroyWindow(filename);
-	cv::destroyWindow("Histogram");
+	//calibrate_threshold = parser.has("calibrate");
+	//
+	//cv::Mat cropped = cropGrid(image);
+	//int rot = getImageRotation(cropped);
+	//if (rot >= 0) {
+	//	cv::rotate(image, image, rot);
+	//}
+
+	//cv::imshow(filename, image);
+	//cv::Mat histImage = getHistogram(cropped);
+	//cv::imshow("Histogram", histImage);
+	//cv::waitKey(0);
+	//cv::destroyWindow(filename);
+	//cv::destroyWindow("Histogram");
 
 	return 0;
 }
