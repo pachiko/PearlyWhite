@@ -6,6 +6,152 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
+
+// Byte swaps an integer
+inline uint byteSwap(char* bytes, size_t length) {
+	if (length > 4) {
+		std::cout << "Overflow!\n";
+		return 0;
+	}
+
+	uchar* data = reinterpret_cast<uchar*>(bytes);
+	uint res = 0;
+
+	for (size_t i = 0; i < length; i++) {
+		res += data[i] << (i * 8);
+	}
+
+	return res;
+}
+
+
+// Checks the prefix in the DICOM file. Must be "DICM"
+bool DICOMReader::checkPrefix() {
+	const uint prefixPos = 128;
+	const uint prefixSize = 4;
+	file.seekg(prefixPos, file.beg);
+
+	buffer.resize(prefixSize);
+	file.read(buffer.data(), prefixSize);
+
+	const std::string prefix = "DICM";
+
+	if (std::memcmp(buffer.data(), prefix.data(), prefixSize)) {
+		std::cout << "ERROR: Not a DICOM file!\n";
+		file.close();
+		return false;
+	}
+
+	return true;
+}
+
+
+// Searches the file for the tag and reads the data into 'buffer'
+bool DICOMReader::readElement(const std::array<char, 4>& tag) {
+	auto it = std::search(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), tag.begin(), tag.end());
+	if (it == std::istreambuf_iterator<char>()) {
+		return false;
+	}
+
+	// Read and check the explicit VR (2 Bytes)
+	const uint vrSize = 2;
+	buffer.resize(vrSize);
+	file.read(buffer.data(), vrSize);
+
+	bool diffLayout = false;
+
+	const std::array<std::string, 6> diffLayouts = {"OB", "OW", "OF", "SQ", "UT", "UN"};
+	for (auto& vr : diffLayouts) {
+		if (!std::memcmp(buffer.data(), vr.data(), vrSize)) {
+			diffLayout = true;
+			break;
+		}
+	}
+	
+	// Read the value length and value field
+	if (diffLayout) {
+		file.seekg(2, file.cur); // Skip reserved bytes [00 00]
+
+		buffer.resize(4);
+		file.read(buffer.data(), 4); // Value length is 4 Bytes
+		uint length = byteSwap(buffer.data(), 4);
+
+		buffer.resize(length);
+		file.read(buffer.data(), length);
+	} else {
+		file.read(buffer.data(), 2); // Value length is 2 Bytes
+		uint length = byteSwap(buffer.data(), 2);
+
+		buffer.resize(length);
+		file.read(buffer.data(), length);
+	}
+
+	return true;
+}
+
+
+// Checks the transfer syntax to set endianness and explicitVR flag.
+bool DICOMReader::parseTransferSyntax() {
+	std::array<char, 4> transferSyntaxTag = { 0x02, 0x00, 0x10, 0x00 };
+
+	if (!readElement(transferSyntaxTag)) {
+		std::cout << "ERROR: Could not find Transfer Syntax!\n";
+		file.close();
+		return false;
+	}
+
+	std::string explicitVRLittleEndian = "1.2.840.10008.1.2.1";
+
+	// TODO: support other syntaxes
+	if (std::memcmp(buffer.data(), explicitVRLittleEndian.data(), buffer.size())) {
+		std::cout << "ERROR: Unknown Transfer Syntax! ";
+		std::copy(buffer.begin(), buffer.end(), std::ostream_iterator<char>(std::cout));
+		file.close();
+		return false;
+	}
+
+	return true;
+}
+
+
+// Determine the number of image rows and columns
+bool DICOMReader::parseImageRowsCols() {
+	std::array<char, 4> pixelRowTag = { 0x28, 0x00, 0x10, 0x00 };
+	if (!readElement(pixelRowTag)) {
+		std::cout << "ERROR: Could not find Pixel Rows!\n";
+		file.close();
+		return false;
+	}
+	rows = byteSwap(buffer.data(), buffer.size());
+
+	std::array<char, 4> pixelColTag = { 0x28, 0x00, 0x11, 0x00 };
+	if (!readElement(pixelColTag)) {
+		std::cout << "ERROR: Could not find Pixel Columns!\n";
+		file.close();
+		return false;
+	}
+	cols = byteSwap(buffer.data(), buffer.size());
+	
+	return true;
+}
+
+
+// Parse pixel data
+bool DICOMReader::parsePixelData() {
+	std::array<char, 4> pixelTag = { 0xe0, 0x7f, 0x10, 0x00 };
+
+	if (!readElement(pixelTag)) {
+		std::cout << "ERROR: Could not find Pixel Data!\n";
+		file.close();
+		return false;
+	}
+
+	bpp = buffer.size() / (rows * cols);
+
+	return true;
+}
+
+
 DICOMReader::DICOMReader(const std::string& path) {
 	file.open(path, std::ios::binary);
 	if (!file) {
@@ -13,136 +159,27 @@ DICOMReader::DICOMReader(const std::string& path) {
 		return;
 	}
 
-	// Prefix
-	const unsigned int prefixPos = 128;
-	const unsigned int prefixSize = 4;
-	file.seekg(prefixPos, file.beg);
-
-	buffer.resize(prefixSize);
-	file.read(buffer.data(), prefixSize);
-	std::string prefix = "DICM";
-	if (std::memcmp(buffer.data(), prefix.data(), prefixSize)) {
-		std::cout << "ERROR: Not a DICOM file!\n";
-		file.close();
+	if (!checkPrefix()) {
 		return;
 	}
 
-	// Transfer Syntax
-	std::array<char, 4> transferSyntaxTag = { 0x02, 0x00, 0x10, 0x00 }; // Little Endian
-	auto it = std::search(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), transferSyntaxTag.begin(), transferSyntaxTag.end());
-	if (it == std::istreambuf_iterator<char>()) {
-		std::cout << "ERROR: Could not find Transfer Syntax!\n";
-		file.close();
+	if (!parseTransferSyntax()) {
 		return;
 	}
 
-	buffer.resize(2);
-	file.read(buffer.data(), 2);
-	std::string transferSyntaxVR = "UI";
-	if (std::memcmp(buffer.data(), transferSyntaxVR.data(), 2)) {
-		std::cout << "ERROR: Transfer Syntax is not of UID Value-type!\n";
-		file.close();
+	if (!parseImageRowsCols()) {
 		return;
 	}
 
-	file.read(buffer.data(), 2);
-	unsigned char b1 = buffer[1];
-	unsigned char b0 = buffer[0];
-	unsigned int transferLength = b0 + (b1 << 8);
-
-	buffer.resize(transferLength);
-	file.read(buffer.data(), transferLength);
-	std::string transferSyntax = "1.2.840.10008.1.2.1";
-	if (std::memcmp(buffer.data(), transferSyntax.data(), 2)) {
-		std::cout << "ERROR: Transfer Syntax is not of Explicit VR Little Endian!\n";
-		file.close();
+	if (!parsePixelData()) {
 		return;
 	}
 
-	// Pixel rows & columns
-	std::array<char, 4> pixelRowTag = { 0x28, 0x00, 0x10, 0x00 }; // Little Endian
-	it = std::search(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), pixelRowTag.begin(), pixelRowTag.end());
-	if (it == std::istreambuf_iterator<char>()) {
-		std::cout << "ERROR: Could not find Pixel Rows!\n";
-		file.close();
-		return;
-	}
-	file.read(buffer.data(), 2);
-	std::string pixelRowVR = "US";
-	if (std::memcmp(buffer.data(), pixelRowVR.data(), 2)) {
-		std::cout << "ERROR: PixelRow is not of US Value-type!\n";
-		file.close();
-		return;
-	}
-	file.read(buffer.data(), 2);
-	b1 = buffer[1];
-	b0 = buffer[0];
-	b1 = b1 << 8;
-	unsigned int rowLength = b0 + b1;
-	file.read(buffer.data(), rowLength);
-	b1 = buffer[1];
-	b0 = buffer[0];
-	unsigned int numRows = b0 + (b1 << 8);
-
-	std::array<char, 4> pixelColTag = { 0x28, 0x00, 0x11, 0x00 }; // Little Endian
-	it = std::search(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), pixelColTag.begin(), pixelColTag.end());
-	if (it == std::istreambuf_iterator<char>()) {
-		std::cout << "ERROR: Could not find Pixel Cols!\n";
-		file.close();
-		return;
-	}
-	file.read(buffer.data(), 2);
-	std::string pixelColVR = "US";
-	if (std::memcmp(buffer.data(), pixelColVR.data(), 2)) {
-		std::cout << "ERROR: PixelCol is not of US Value-type!\n";
-		file.close();
-		return;
-	}
-	file.read(buffer.data(), 2);
-	b1 = buffer[1];
-	b0 = buffer[0];
-	unsigned int colLength = b0 + (b1 << 8);
-	file.read(buffer.data(), colLength);
-	b1 = buffer[1];
-	b0 = buffer[0];
-	unsigned int numCols = b0 + (b1 << 8);
-
-	// Pixel Data
-	std::array<char, 4> pixelTag = { 0xe0, 0x7f, 0x10, 0x00 };
-	it = std::search(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>(), pixelTag.begin(), pixelTag.end());
-	if (it == std::istreambuf_iterator<char>()) {
-		std::cout << "ERROR: Could not find Pixel Data!\n";
-		file.close();
-		return;
-	}
-	
-	file.read(buffer.data(), 2);
-	std::string pixelVR = "OW";
-	if (std::memcmp(buffer.data(), pixelVR.data(), 2)) {
-		std::cout << "ERROR: Pixel Data is not of OW Value-type!\n";
-		file.close();
-		return;
-	}
-
-	file.seekg(2, file.cur); // skip reserved
-	buffer.resize(4);
-	file.read(buffer.data(), 4);
-	b0 = buffer[0];
-	b1 = buffer[1];
-	unsigned char b2 = buffer[2];
-	unsigned char b3 = buffer[3];
-	unsigned int numBytes = b0 + (b1 << 8) + (b2 << 16) + (b3 << 24);
-
-	if (numRows * numCols * 2 != numBytes) {
-		std::cout << "ERROR: NUmber of Bytes in pixel data does not match numbers of rows and columns!\n";
-		file.close();
-		return;
-	}
-
-	cv::Mat image = cv::Mat::zeros(cv::Size(numCols, numRows), CV_16UC1);
-	file.read(reinterpret_cast<char*>(image.ptr()), numBytes);
-	cv::imshow("WTF", image);
-	cv::waitKey(0);
+	if (bpp == 2) {
+		cv::Mat image(cv::Size(cols, rows), CV_16UC1, reinterpret_cast<uchar*>(buffer.data()));
+		cv::imshow("DICOM", image);
+		cv::waitKey(0);
+	} // TODO: support other bit-depths & number of channels
 }
 
 

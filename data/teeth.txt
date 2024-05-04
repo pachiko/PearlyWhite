@@ -61,7 +61,7 @@ c) Pixel Columns (0028, 0011)
 d) Pixel Data Element (7FE0, 0010)
 
 [e0 7f 10 00] [4f 57] [00 00] [88 23 3d 00] [...]
-(7FE0, 0010) OW (RESERVED by DICOM) 4,006,792 <image!>
+(7FE0, 0010) OW (RESERVED by DICOM) 4,006,792 <image>
 
 OW: A string of 16-bit words where the encoding of the contents is specified by the negotiated Transfer Syntax. OW is a VR that requires byte swapping within each word when changing between Little Endian and Big Endian byte ordering (see Section 7.3).
 NB: Didnt seem like we need it??

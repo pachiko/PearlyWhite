@@ -3,6 +3,7 @@
 #include <vector>
 
 
+// Reads a DICOM file and displays its image
 class DICOMReader {
 public:
 	DICOMReader(const std::string&);
@@ -14,4 +15,14 @@ private:
 
 	bool littleEndian = true;
 	bool explicitVR = true;
+
+	size_t rows, cols;
+	size_t bpp; // bytes per pixel
+
+	bool checkPrefix();
+	bool parseTransferSyntax();
+	bool parseImageRowsCols();
+	bool parsePixelData();
+
+	bool readElement(const std::array<char, 4>&);
 };
