@@ -1,4 +1,4 @@
-#include "dicm.h"
+#include "dicom.h"
 #include <iostream>
 #include <array>
 #include <algorithm>
