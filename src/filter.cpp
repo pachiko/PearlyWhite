@@ -32,7 +32,7 @@ cv::Mat cropGrid(const cv::Mat& image) {
 	gridCropping.threshold();
 
 	std::vector<std::vector<cv::Point>> contours;
-	cv::findContours(gridCropping.m_output, contours, cv::RetrievalModes::RETR_LIST, cv::ContourApproximationModes::CHAIN_APPROX_SIMPLE);
+	cv::findContours(gridCropping.m_output, contours, cv::RetrievalModes::RETR_EXTERNAL, cv::ContourApproximationModes::CHAIN_APPROX_SIMPLE);
 
 	int dentalContourIdx = findDentalContour(contours);
 	if (dentalContourIdx < 0) {
