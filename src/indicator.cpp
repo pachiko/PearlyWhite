@@ -5,6 +5,12 @@
 #include "trackbarThresholder.h"
 
 
+// Constants for checking if contour is the indicator
+const float minAr = 0.9, maxAr = 1.1;
+const float minAreaRatio = 0.001, maxAreaRatio = 0.002;
+const float maxEdgeDistRatio = 0.2;
+
+
 // Calculates the distance ratio of a value 'x' from the 'edge' or from 0, whichever is nearer.
 // Also returns a boolean to indicate 'x' is closer to 0 than the 'edge'.
 inline std::pair<double, bool> fromEdge(double x, double edge) {
@@ -40,18 +46,18 @@ int getImageRotation(const cv::Mat& image) {
 
 		// Aspect ratio should not be +/- 10% more than a perfect square.
 		double ar = r.width / static_cast<double>(r.height);
-		if (ar > 1.1 || ar < 0.9) continue;
+		if (ar > maxAr || ar < minAr) continue;
 
 		// Should not be too big or too small 
 		double areaRatio = r.area() / static_cast<double>(size.x * size.y);
-		if (areaRatio > 0.002 || areaRatio < 0.001) continue;
+		if (areaRatio > maxAreaRatio || areaRatio < minAreaRatio) continue;
 
 		cv::Point center{ r.x + r.width / 2, r.y + r.height / 2 };
 		auto xEdge = fromEdge(center.x, size.x);
 		auto yEdge = fromEdge(center.y, size.y);
 		
 		// Indicator should not be more than 20% away
-		if (xEdge.first > 0.2 || yEdge.first > 0.2) continue;
+		if (xEdge.first > maxEdgeDistRatio || yEdge.first > maxEdgeDistRatio) continue;
 
 		return findAngle(xEdge.second, yEdge.second);
 	}

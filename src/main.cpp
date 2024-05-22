@@ -36,13 +36,18 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
+	cv::Mat image;
+
 	std::filesystem::path filePath = filename;
 	if (filePath.extension() == ".dcm") {
 		DICOMReader reader(filename);
-		return 0;
+		image = reader.getImage().clone();
+		cv::resize(image, image, cv::Size(640, 480));
+		image.convertTo(image, CV_8U, 1 / 256.0);
+	} else {
+		image = cv::imread(filename, cv::IMREAD_GRAYSCALE);
 	}
 
-	cv::Mat image = cv::imread(filename, cv::IMREAD_GRAYSCALE);
 	if (image.empty()) {
 		std::cout << "Could not open or find the image: " << filename << "\n";
 		return -1;
@@ -60,8 +65,7 @@ int main(int argc, char** argv) {
 	cv::Mat histImage = getHistogram(cropped);
 	cv::imshow("Histogram", histImage);
 	cv::waitKey(0);
-	cv::destroyWindow(filename);
-	cv::destroyWindow("Histogram");
+	cv::destroyAllWindows();
 
 	return 0;
 }
