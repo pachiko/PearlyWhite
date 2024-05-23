@@ -6,7 +6,9 @@
 
  // #define DEBUG_MASK
 
-// Finds the dental image contour in the vector.
+/// @brief Finds the main dental contour. That's the largest one.
+/// @param contours: The vector of contours, where each contour is represented as a vector of points.
+/// @return The index of the contour. If not found, returns -1.
 int findDentalContour(const std::vector<std::vector<cv::Point>>& contours) {
 	double maxArea = -1;
 	int maxContourIdx = -1;
@@ -23,9 +25,6 @@ int findDentalContour(const std::vector<std::vector<cv::Point>>& contours) {
 	return maxContourIdx;
 }
 
-
-// Cut away the grid in the image and return the cropped image.
-// The numbers on the grid creates many false positives when finding the indicator.
 cv::Mat cropGrid(const cv::Mat& image) {
 	TrackbarThresholder gridCropping(230, 1, "Grid Removal");
 	gridCropping.m_input = image;
@@ -43,7 +42,6 @@ cv::Mat cropGrid(const cv::Mat& image) {
 	cv::Rect r = cv::boundingRect(contours[dentalContourIdx]);
 	return image(cv::Range(r.y, r.y + r.height), cv::Range(r.x, r.x + r.width));
 }
-
 
 /**
  * Draws and fills a rectangle with rounded corners

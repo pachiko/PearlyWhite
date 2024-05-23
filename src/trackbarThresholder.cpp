@@ -7,7 +7,6 @@ TrackbarThresholder::TrackbarThresholder() { }
 TrackbarThresholder::TrackbarThresholder(int thresholdValue, int thresholdType, const cv::String& windowName) : 
 	m_thresholdValue(thresholdValue), m_thresholdType(thresholdType), m_windowName(windowName) { }
 
-// Perform thresholding. If calibrate_threshold, use trackbars and window to show result.
 void TrackbarThresholder::threshold() {
 	if (calibrate_threshold) {
 		cv::namedWindow(m_windowName, cv::WINDOW_AUTOSIZE);
@@ -20,11 +19,9 @@ void TrackbarThresholder::threshold() {
 	}
 }
 
-
 void TrackbarThresholder::doThreshold() {
 	cv::threshold(m_input, m_output, m_thresholdValue, maxThresholdValue, m_thresholdType);
 }
-
 
 void TrackbarThresholder::trackbarCallback(int newValue, void* userData) {
 	TrackbarThresholder* thresholder = (TrackbarThresholder*) userData;

@@ -8,31 +8,31 @@
 
 // #define DEBUG_DICOM
 
-// Byte swaps an integer
-inline uint byteSwap(const char* bytes, const size_t length) {
-	if (length > 4) {
-		std::cout << "Overflow!\n";
-		return 0;
-	}
+DICOMReader::DICOMReader(const std::string& path) {
+	if (!readFileData(path)) throw std::invalid_argument("Invalid File");
 
-	const uchar* data = reinterpret_cast<const uchar*>(bytes);
-	uint res = 0;
+	if (!checkPrefix()) throw std::runtime_error("Invalid Prefix");
 
-	for (size_t i = 0; i < length; i++) {
-		res += data[i] << (i * 8);
-	}
+	if (!parseTransferSyntax()) throw std::runtime_error("Invalid Transfer Syntax");
 
-	return res;
+	if (!parseImageRowsCols()) throw std::runtime_error("Invalid Rows and Columns");
+
+	if (!parsePixelData()) throw std::runtime_error("Invalid Pixel Data");
+
+	if (bpp == 2) {
+		image = cv::Mat(cv::Size(cols, rows), CV_16UC1, reinterpret_cast<uchar*>(buffer.data()));
+#ifdef DEBUG_DICOM
+		cv::imshow("DICOM", image);
+		cv::waitKey(0);
+		cv::destroyWindow("DICOM");
+#endif
+	} // TODO: support other bit-depths & number of channels
 }
 
-
-// Returns the image.
 const cv::Mat& DICOMReader::getImage() const {
 	return image;
 }
 
-
-// Read all the bytes from the file
 bool DICOMReader::readFileData(const std::string& path) {
 	std::ifstream file(path, std::ios::binary);
 
@@ -48,8 +48,6 @@ bool DICOMReader::readFileData(const std::string& path) {
 	}
 }
 
-
-// Checks the prefix in the DICOM file. Must be "DICM"
 bool DICOMReader::checkPrefix() {
 	const uint prefixPos = 128;
 	const uint prefixSize = 4;
@@ -66,8 +64,57 @@ bool DICOMReader::checkPrefix() {
 	return true;
 }
 
+bool DICOMReader::parseTransferSyntax() {
+	const std::array<char, 4> transferSyntaxTag = { 0x02, 0x00, 0x10, 0x00 };
 
-// Searches the file for the tag and reads the data into 'buffer'
+	if (!readElement(transferSyntaxTag)) {
+		std::cout << "ERROR: Could not find Transfer Syntax!\n";
+		return false;
+	}
+
+	const std::string explicitVRLittleEndian = "1.2.840.10008.1.2.1";
+
+	// TODO: support other syntaxes
+	if (std::strcmp(buffer.data(), explicitVRLittleEndian.data())) {
+		std::cout << "ERROR: Unknown Transfer Syntax! ";
+		std::cout << buffer << "\n";
+		return false;
+	}
+
+	return true;
+}
+
+bool DICOMReader::parseImageRowsCols() {
+	const std::array<char, 4> pixelRowTag = { 0x28, 0x00, 0x10, 0x00 };
+	if (!readElement(pixelRowTag)) {
+		std::cout << "ERROR: Could not find Pixel Rows!\n";
+		return false;
+	}
+	rows = readUint(buffer.data(), buffer.size());
+
+	const std::array<char, 4> pixelColTag = { 0x28, 0x00, 0x11, 0x00 };
+	if (!readElement(pixelColTag)) {
+		std::cout << "ERROR: Could not find Pixel Columns!\n";
+		return false;
+	}
+	cols = readUint(buffer.data(), buffer.size());
+
+	return true;
+}
+
+bool DICOMReader::parsePixelData() {
+	const std::array<char, 4> pixelTag = { 0xe0, 0x7f, 0x10, 0x00 };
+
+	if (!readElement(pixelTag)) {
+		std::cout << "ERROR: Could not find Pixel Data!\n";
+		return false;
+	}
+
+	bpp = buffer.size() / (rows * cols);
+
+	return true;
+}
+
 bool DICOMReader::readElement(const std::array<char, 4>& tag) {
 	auto it = std::search(std::istreambuf_iterator<char>(fileData), std::istreambuf_iterator<char>(), tag.begin(), tag.end());
 	if (it == std::istreambuf_iterator<char>()) {
@@ -95,13 +142,13 @@ bool DICOMReader::readElement(const std::array<char, 4>& tag) {
 
 		buffer.resize(4);
 		fileData.read(buffer.data(), 4); // Value length is 4 Bytes
-		uint length = byteSwap(buffer.data(), 4);
+		uint length = readUint(buffer.data(), 4);
 
 		buffer.resize(length);
 		fileData.read(buffer.data(), length);
 	} else {
 		fileData.read(buffer.data(), 2); // Value length is 2 Bytes
-		uint length = byteSwap(buffer.data(), 2);
+		uint length = readUint(buffer.data(), 2);
 
 		buffer.resize(length);
 		fileData.read(buffer.data(), length);
@@ -111,82 +158,24 @@ bool DICOMReader::readElement(const std::array<char, 4>& tag) {
 }
 
 
-// Checks the transfer syntax to set endianness and explicitVR flag.
-bool DICOMReader::parseTransferSyntax() {
-	const std::array<char, 4> transferSyntaxTag = { 0x02, 0x00, 0x10, 0x00 };
-
-	if (!readElement(transferSyntaxTag)) {
-		std::cout << "ERROR: Could not find Transfer Syntax!\n";
-		return false;
+uint DICOMReader::readUint(const char* bytes, const size_t length) {
+	if (length > 4) {
+		std::cout << "Overflow!\n";
+		return 0;
 	}
 
-	const std::string explicitVRLittleEndian = "1.2.840.10008.1.2.1";
-
-	// TODO: support other syntaxes
-	if (std::strcmp(buffer.data(), explicitVRLittleEndian.data())) {
-		std::cout << "ERROR: Unknown Transfer Syntax! ";
-		std::cout << buffer << "\n";
-		return false;
-	}
-
-	return true;
-}
-
-
-// Determine the number of image rows and columns
-bool DICOMReader::parseImageRowsCols() {
-	const std::array<char, 4> pixelRowTag = { 0x28, 0x00, 0x10, 0x00 };
-	if (!readElement(pixelRowTag)) {
-		std::cout << "ERROR: Could not find Pixel Rows!\n";
-		return false;
-	}
-	rows = byteSwap(buffer.data(), buffer.size());
-
-	const std::array<char, 4> pixelColTag = { 0x28, 0x00, 0x11, 0x00 };
-	if (!readElement(pixelColTag)) {
-		std::cout << "ERROR: Could not find Pixel Columns!\n";
-		return false;
-	}
-	cols = byteSwap(buffer.data(), buffer.size());
+	const uchar* data = reinterpret_cast<const uchar*>(bytes);
+	uint res = 0;
 	
-	return true;
-}
-
-
-// Parse pixel data
-bool DICOMReader::parsePixelData() {
-	const std::array<char, 4> pixelTag = { 0xe0, 0x7f, 0x10, 0x00 };
-
-	if (!readElement(pixelTag)) {
-		std::cout << "ERROR: Could not find Pixel Data!\n";
-		return false;
+	if (littleEndian) {
+		for (size_t i = 0; i < length; i++) {
+			res += data[i] << (i * 8);
+		}
+	} else {
+		for (size_t i = length - 1; i > -1; i--) {
+			res += data[i] << (i * 8);
+		}
 	}
 
-	bpp = buffer.size() / (rows * cols);
-
-	return true;
-}
-
-
-// Constructor for DICOM file reading
-DICOMReader::DICOMReader(const std::string& path) {
-	if (!readFileData(path)) throw std::invalid_argument("Invalid File");
-
-	if (!checkPrefix()) throw std::runtime_error("Invalid Prefix");
-	
-	if (!parseTransferSyntax()) throw std::runtime_error("Invalid Transfer Syntax");
-
-	if (!parseImageRowsCols()) throw std::runtime_error("Invalid Rows and Columns");
-
-	if (!parsePixelData()) throw std::runtime_error("Invalid Pixel Data");
-
-
-	if (bpp == 2) {
-		image = cv::Mat(cv::Size(cols, rows), CV_16UC1, reinterpret_cast<uchar*>(buffer.data()));
-		#ifdef DEBUG_DICOM
-				cv::imshow("DICOM", image);
-				cv::waitKey(0);
-				cv::destroyWindow("DICOM");
-		#endif
-	} // TODO: support other bit-depths & number of channels
+	return res;
 }

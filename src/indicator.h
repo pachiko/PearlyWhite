@@ -3,5 +3,7 @@
 #include <opencv2/core.hpp>
 
 
-// Figures out what angle (cv::RotateFlags) should the image be rotated with.
+/// @brief Finds the angle to rotate based on the position of the indicator in the image
+/// @param const cv::Mat&: The image containing the indicator
+/// @return The cv::RotateFlags value for the required rotation. -1 means no rotation required.
 int getImageRotation(const cv::Mat& );
